@@ -1,0 +1,262 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:WEGOCulture.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="390" d:DesignHeight="844"
+             x:Class="WEGOCulture.Views.MainView"
+             x:DataType="vm:MainViewModel">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <!-- 主容器：适应移动端刘海屏与安全区域 -->
+    <Grid RowDefinitions="Auto,*" Margin="{OnPlatform '0', Android='0,12,0,0', iOS='0,20,0,0'}">
+
+        <!-- 1. 顶部控制栏 -->
+        <StackPanel Grid.Row="0" Background="{DynamicResource SystemRegionBrush}">
+            
+            <!-- 模式切换：分段控制按钮 -->
+            <Border Padding="12,8,12,4">
+                <Grid ColumnDefinitions="*,*">
+                    <RadioButton Grid.Column="0" 
+                                 Content="📖 刷题模式" 
+                                 IsChecked="{Binding !IsSearchMode}"
+                                 GroupName="ModeGroup" 
+                                 HorizontalAlignment="Center"/>
+                    
+                    <RadioButton Grid.Column="1" 
+                                 Content="🔍 搜索模式" 
+                                 IsChecked="{Binding IsSearchMode}"
+                                 GroupName="ModeGroup" 
+                                 HorizontalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- 搜索框（仅在搜索模式下展示） -->
+            <Border Padding="12,4,12,8" 
+                    IsVisible="{Binding IsSearchMode}"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                    BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0"
+                             x:Name="SearchBox"
+                             Text="{Binding SearchTitle}" 
+                             PlaceholderText="输入关键字搜索题目..." 
+                             CornerRadius="18"
+                             Padding="12,6"
+                             VerticalContentAlignment="Center">
+                        <TextBox.InnerRightContent>
+                            <Button Command="{Binding $parent[TextBox].Clear}"
+                                    IsVisible="{Binding Text, RelativeSource={RelativeSource AncestorType=TextBox}, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="8,0"
+                                    Cursor="Hand"
+                                    VerticalAlignment="Center">
+                                <TextBlock Text="✕" FontSize="14" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            </Button>
+                        </TextBox.InnerRightContent>
+                    </TextBox>
+
+                    <Border Grid.Column="1" Margin="8,0,0,0" Padding="10,4" CornerRadius="12"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                        <TextBlock Text="{Binding QuestionList.Count, StringFormat='{}{0} 条'}" 
+                                   FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <!-- ================= 2. 刷题模式视图 (!IsSearchMode) ================= -->
+        <Grid Grid.Row="1" Margin="5"
+              RowDefinitions="*,Auto" 
+              IsVisible="{Binding !IsSearchMode}">
+            
+            <!-- 题目内容卡片 -->
+            <ScrollViewer Grid.Row="0">
+                <Border CornerRadius="12" 
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1"
+                        Padding="16">
+                    <StackPanel Spacing="12" DataContext="{Binding CurrentQuestion}">
+                        
+                        <!-- 题型与题干 -->
+                        <DockPanel LastChildFill="True">
+                            <Border DockPanel.Dock="Left"
+                                    Background="{DynamicResource SystemAccentColor}"
+                                    CornerRadius="6" Padding="6,2" Margin="0,2,8,0" VerticalAlignment="Top">
+                                <TextBlock Text="{Binding QuestionType}" Foreground="White" FontSize="11" FontWeight="Bold"/>
+                            </Border>
+                            <TextBlock Text="{Binding QuestionText}" FontWeight="Bold" FontSize="16" LineHeight="24" TextWrapping="Wrap"/>
+                        </DockPanel>
+
+                        <!-- 选项列表：安全的单 TextBlock + Run 拼接结构 -->
+                        <StackPanel Margin="0,6,0,0" Spacing="10">
+                            <!-- A 选项 -->
+                            <TextBlock TextWrapping="Wrap" FontSize="15" 
+                                       IsVisible="{Binding OptionA, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                <Run Text="A. " FontWeight="Bold" Foreground="{DynamicResource SystemAccentColor}"/>
+                                <Run Text="{Binding OptionA}"/>
+                            </TextBlock>
+
+                            <!-- B 选项 -->
+                            <TextBlock TextWrapping="Wrap" FontSize="15" 
+                                       IsVisible="{Binding OptionB, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                <Run Text="B. " FontWeight="Bold" Foreground="{DynamicResource SystemAccentColor}"/>
+                                <Run Text="{Binding OptionB}"/>
+                            </TextBlock>
+
+                            <!-- C 选项 -->
+                            <TextBlock TextWrapping="Wrap" FontSize="15" 
+                                       IsVisible="{Binding OptionC, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                <Run Text="C. " FontWeight="Bold" Foreground="{DynamicResource SystemAccentColor}"/>
+                                <Run Text="{Binding OptionC}"/>
+                            </TextBlock>
+
+                            <!-- D 选项 -->
+                            <TextBlock TextWrapping="Wrap" FontSize="15" 
+                                       IsVisible="{Binding OptionD, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                <Run Text="D. " FontWeight="Bold" Foreground="{DynamicResource SystemAccentColor}"/>
+                                <Run Text="{Binding OptionD}"/>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- 答案与解析 -->
+                        <Border Background="{DynamicResource SystemControlBackgroundChromeLowBrush}"
+                                CornerRadius="8" Padding="12,10" Margin="0,8,0,0">
+                            <StackPanel Spacing="6">
+                                <!-- 答案 -->
+                                <TextBlock FontSize="14">
+                                    <Run Text="正确答案：" FontWeight="Bold"/>
+                                    <Run Text="{Binding Answer}" FontWeight="Bold" Foreground="{DynamicResource SystemAccentColor}"/>
+                                </TextBlock>
+
+                                <!-- 解析 -->
+                                <TextBlock TextWrapping="Wrap" FontSize="13" 
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                           IsVisible="{Binding Analysis, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                    <Run Text="解析：" FontWeight="Bold" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                                    <Run Text="{Binding Analysis}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </ScrollViewer>
+
+            <!-- 底部切换控制 -->
+            <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*" Margin="0,12,0,0">
+                <Button Grid.Column="0" 
+                        Content="上一题" 
+                        Command="{Binding PreviousQuestionCommand}"
+                        HorizontalAlignment="Stretch" 
+                        HorizontalContentAlignment="Center"
+                        CornerRadius="20" Margin="5"
+                        Padding="0,10"/>
+
+                <!-- 显示格式：当前第 X 题 / 共 Y 题 -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0">
+                    <TextBlock Text="{Binding CurrentDisplayIndex}" FontWeight="Bold" FontSize="14"/>
+                    <TextBlock Text=" / " FontWeight="Bold" FontSize="14"/>
+                    <TextBlock Text="{Binding QuestionList.Count}" FontWeight="Bold" FontSize="14"/>
+                </StackPanel>
+
+                <Button Grid.Column="2" 
+                        Content="下一题" 
+                        Command="{Binding NextQuestionCommand}"
+                        HorizontalAlignment="Stretch" 
+                        HorizontalContentAlignment="Center"
+                        CornerRadius="20" Margin="5"
+                        Padding="0,10"/>
+            </Grid>
+        </Grid>
+
+        <!-- ================= 3. 搜索模式列表视图 (IsSearchMode) ================= -->
+        <ListBox Grid.Row="1"
+                 ItemsSource="{Binding QuestionList}"
+                 SelectedItem="{Binding SelectedQuestion}"
+                 Background="Transparent"
+                 Padding="12"
+                 IsVisible="{Binding IsSearchMode}">
+            
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Margin" Value="0,0,0,12"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListBox.Styles>
+
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border CornerRadius="12" 
+                            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                            BorderThickness="1"
+                            Padding="14">
+                        <StackPanel Spacing="10">
+                            <!-- 题型与题干 -->
+                            <DockPanel LastChildFill="True">
+                                <Border DockPanel.Dock="Left"
+                                        Background="{DynamicResource SystemAccentColor}"
+                                        CornerRadius="6" Padding="6,2" Margin="0,2,8,0" VerticalAlignment="Top">
+                                    <TextBlock Text="{Binding QuestionType}" Foreground="White" FontSize="11" FontWeight="Bold"/>
+                                </Border>
+                                <TextBlock Text="{Binding QuestionText}" FontWeight="Bold" FontSize="15" LineHeight="22" TextWrapping="Wrap"/>
+                            </DockPanel>
+
+                            <!-- 选项列表：安全的单 TextBlock + Run 结构 -->
+                            <StackPanel Margin="0,4,0,0" Spacing="6">
+                                <TextBlock TextWrapping="Wrap" FontSize="14" 
+                                           IsVisible="{Binding OptionA, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                    <Run Text="A. " FontWeight="Bold" Foreground="{DynamicResource SystemAccentColor}"/>
+                                    <Run Text="{Binding OptionA}"/>
+                                </TextBlock>
+
+                                <TextBlock TextWrapping="Wrap" FontSize="14" 
+                                           IsVisible="{Binding OptionB, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                    <Run Text="B. " FontWeight="Bold" Foreground="{DynamicResource SystemAccentColor}"/>
+                                    <Run Text="{Binding OptionB}"/>
+                                </TextBlock>
+
+                                <TextBlock TextWrapping="Wrap" FontSize="14" 
+                                           IsVisible="{Binding OptionC, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                    <Run Text="C. " FontWeight="Bold" Foreground="{DynamicResource SystemAccentColor}"/>
+                                    <Run Text="{Binding OptionC}"/>
+                                </TextBlock>
+
+                                <TextBlock TextWrapping="Wrap" FontSize="14" 
+                                           IsVisible="{Binding OptionD, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                    <Run Text="D. " FontWeight="Bold" Foreground="{DynamicResource SystemAccentColor}"/>
+                                    <Run Text="{Binding OptionD}"/>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <!-- 答案与解析 -->
+                            <Border Background="{DynamicResource SystemControlBackgroundChromeLowBrush}"
+                                    CornerRadius="8" Padding="10,8" Margin="0,4,0,0">
+                                <StackPanel Spacing="6">
+                                    <TextBlock FontSize="13">
+                                        <Run Text="正确答案：" FontWeight="Bold"/>
+                                        <Run Text="{Binding Answer}" FontWeight="Bold" Foreground="{DynamicResource SystemAccentColor}"/>
+                                    </TextBlock>
+
+                                    <TextBlock TextWrapping="Wrap" FontSize="12" 
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               IsVisible="{Binding Analysis, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                        <Run Text="解析：" FontWeight="Bold" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                                        <Run Text="{Binding Analysis}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

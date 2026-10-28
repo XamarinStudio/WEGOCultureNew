@@ -1,0 +1,11 @@
+<Solution>
+  <Project Path="WEGOCulture.Android/WEGOCulture.Android.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="WEGOCulture.Browser/WEGOCulture.Browser.csproj" />
+  <Project Path="WEGOCulture.Desktop/WEGOCulture.Desktop.csproj" />
+  <Project Path="WEGOCulture.iOS/WEGOCulture.iOS.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="WEGOCulture/WEGOCulture.csproj" />
+</Solution>
